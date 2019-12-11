@@ -1,0 +1,19 @@
+{
+    "manifest_version": 2,
+    "name": "NicoruCountFix",
+    "version": "1.0",
+    "description": "ニコル数が9+以上表示されないのを直す拡張機能",
+    "content_scripts": [
+        {
+            "matches": [
+                "https://www.nicovideo.jp/watch/*"
+            ],
+            "js": [
+                "nicoru.js"
+            ]
+        }
+    ],
+    "permissions": [
+        "storage"
+    ]
+}
