@@ -3,6 +3,10 @@
     "name": "NicoruCountFix",
     "version": "1.0",
     "description": "ニコル数が9+以上表示されないのを直す拡張機能",
+    "icons": {
+        "48": "icon/nicoru_count_fix_icon_48.png",
+        "128": "icon/nicoru_count_fix_icon_128.png"
+    },
     "content_scripts": [
         {
             "matches": [
