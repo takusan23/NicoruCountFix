@@ -1,7 +1,7 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "NicoruCountFix",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "description": "ニコられた数が9+以上表示されないのを直す拡張機能",
     "icons": {
         "48": "icon/nicoru_count_fix_icon_48.png",
