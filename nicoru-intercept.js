@@ -8,6 +8,9 @@
     const COMMENT_LIST_ITEM_ARIA_LABEL = 'ニコるボタン'
     const LOCAL_STORAGE_KEY_NG_SETTING = 'nvpc:watch'
 
+    /** MutationObserver 破棄用 @type {MutationObserver?} */
+    let currentMutationObserver = null
+
     // fetch API を上書きして、レスポンスを傍聴出来るようにする。かなりグレーゾーン
     // ニコる数が HTML 内に埋め込まれなくなったため、コメント API のレスポンスを取得する
     // https://stackoverflow.com/questions/45425169/
@@ -72,14 +75,15 @@
         const commentListElement = await awaitAddCommentListElement()
         fixNicoruCountElementList(Array.from(commentListElement.children))
 
-        // コメントリストを MutationObserver で監視する
+        // コメントリストを MutationObserver で監視する。前回のがあれば破棄してから
         // これも setInterval はやっぱり良くないと思って
-        const mutationObserver = new MutationObserver((mutations) => {
+        currentMutationObserver?.disconnect()
+        currentMutationObserver = new MutationObserver((mutations) => {
             mutations.forEach(mutationRecord => {
                 fixNicoruCountElementList(mutationRecord.addedNodes)
             })
         })
-        mutationObserver.observe(commentListElement, { childList: true })
+        currentMutationObserver.observe(commentListElement, { childList: true })
     }
 
     /**
