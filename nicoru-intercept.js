@@ -119,12 +119,21 @@
                         break
                     case "childList":
                         // コメント一覧の更新を追跡して更新
-                        fixNicoruCountElementList(mutationRecord.addedNodes)
+                        // @ts-ignore instanceof Element してるから無視していいはず
+                        fixNicoruCountElementList(Array.from(mutationRecord.addedNodes).filter(node => node instanceof Element))
                         break
                 }
             })
         })
-        currentMutationObserver.observe(commentListElement, { childList: true, attributes: true, subtree: true })
+        currentMutationObserver.observe(
+            commentListElement,
+            {
+                childList: true,
+                attributes: true,
+                subtree: true,
+                attributeFilter: ['class'] // setAttribute すると無限ループするので class のみに
+            }
+        )
     }
 
     /**
