@@ -84,7 +84,7 @@
                 // ニコっていれば nicoruId が存在する
                 const isNicotta = !!commentList[commentIndex]['nicoruId']
                 // TODO デバッグ用
-                commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
+                // commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
                 // ニコる数を表示している要素を探す
                 const nicoruCountElement = commentElement.getElementsByTagName('p')[0]
                 const commentBodyElement = commentElement.getElementsByTagName('p')[1]
