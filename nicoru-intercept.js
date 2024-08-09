@@ -6,6 +6,7 @@
     const COMMENT_RESPONSE_OWNER_COMMENT = 'owner'
     const COMMENT_LIST_FIND_INTERVAL_MS = 500
     const COMMENT_LIST_ITEM_ARIA_LABEL = 'ニコるボタン'
+    const LOCAL_STORAGE_KEY_NG_SETTING = 'nvpc:watch'
 
     // fetch API を上書きして、レスポンスを傍聴出来るようにする。かなりグレーゾーン
     // ニコる数が HTML 内に埋め込まれなくなったため、コメント API のレスポンスを取得する
@@ -41,6 +42,7 @@
         const commentList = commentObject['data']['threads']
             .filter(thread => thread['fork'] !== COMMENT_RESPONSE_OWNER_COMMENT)
             .flatMap(thread => thread['comments'])
+            .filter(thread => checkNgComment(Number(thread['score']), ngSetting)) // 共有 NG を考慮
             .sort((a, b) => a['vposMs'] - b['vposMs'])
 
         /**
@@ -53,7 +55,8 @@
                 const commentIndex = Number(commentElement.getAttribute('data-index'))
                 const actualNicoruCount = commentList[commentIndex]['nicoruCount']
                 const commentBody = commentList[commentIndex]['body']
-                commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
+                // TODO デバッグ用
+                // commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
                 // ニコる数を表示している要素を探す
                 const nicoruCountElement = commentElement.getElementsByTagName('p')[0]
                 const commentBodyElement = commentElement.getElementsByTagName('p')[1]
@@ -103,6 +106,39 @@
                 }
             }, COMMENT_LIST_FIND_INTERVAL_MS)
         })
+    }
+
+    /**
+     * プレイヤーの共有 NG 設定に応じてコメントを表示できるか判定する
+     * 判別は以下の方法で：https://dic.nicovideo.jp/t/a/ng共有機能
+     * 
+     * @param score {Number}
+     * @param ngSetting {'none'|'low'|'middle'|'high'}
+     * @returns 表示可能な場合は true
+     */
+    function checkNgComment(score, ngSetting) {
+        switch (ngSetting) {
+            case "none":
+                return true
+            case "low":
+                return score > -10000
+            case "middle":
+                return score > -4800
+            case "high":
+                return score > -1000
+        }
+    }
+
+    /**
+     * プレイヤーの NG 設定を読み出す
+     * @returns {'none'|'low'|'middle'|'high'} のどれか、設定画面の NG 設定の順番通り
+     */
+    function getNgSetting() {
+        const jsonString = localStorage.getItem(LOCAL_STORAGE_KEY_NG_SETTING)
+        if (!jsonString) {
+            return 'none'
+        }
+        return JSON.parse(jsonString)?.['data']?.['ngScoreThreshold']?.['data'] ?? 'none'
     }
 
 })()
