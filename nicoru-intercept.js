@@ -51,7 +51,7 @@
             .flatMap(thread => thread['comments']) // コメントのオブジェクトにする
             .filter(comment => checkNgShareComment(Number(comment['score']), ngShare)) // 共有 NG を考慮
             .filter(comment => !ngUserList.includes(comment['userId'])) // NG ユーザーを考慮
-            .filter(comment => !ngWordList.includes(comment['body'])) // NG コメントを考慮
+            .filter(comment => !ngWordList.some(word => comment['body'].includes(word))) // NG コメントを考慮
             .sort((a, b) => a['vposMs'] - b['vposMs']) // 時間の早い順に
 
         /**
@@ -71,7 +71,7 @@
                 // ニコっていれば nicoruId が存在する
                 const isNicotta = !!commentList[commentIndex]['nicoruId']
                 // TODO デバッグ用
-                // commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
+                commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
                 // ニコる数を表示している要素を探す
                 const nicoruCountElement = commentElement.getElementsByTagName('p')[0]
                 const commentBodyElement = commentElement.getElementsByTagName('p')[1]
