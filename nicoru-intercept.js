@@ -48,7 +48,20 @@
         // https://blog.nicovideo.jp/niconews/225274.html
         const commentList = commentObject['data']['threads']
             .filter(thread => thread['fork'] !== COMMENT_RESPONSE_OWNER_COMMENT) // 投稿者コメントは出ない？
-            .flatMap(thread => thread['comments']) // コメントのオブジェクトにする
+            .sort((a, b) => {
+                // 一覧表示で、同じ時間のコメントがあれば、かんたんコメントが先にくるようにしている？
+                // https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+                const nameA = a['fork']
+                const nameB = b['fork']
+                if (nameA < nameB) {
+                    return -1
+                }
+                if (nameA > nameB) {
+                    return 1
+                }
+                return 0
+            })
+            .flatMap(thread => thread['comments']) // 全てのコメントを 1 つの配列に
             .filter(comment => checkNgShareComment(Number(comment['score']), ngShare)) // 共有 NG を考慮
             .filter(comment => !ngUserList.includes(comment['userId'])) // NG ユーザーを考慮
             .filter(comment => !ngWordList.some(word => comment['body'].includes(word))) // NG コメントを考慮
@@ -71,7 +84,7 @@
                 // ニコっていれば nicoruId が存在する
                 const isNicotta = !!commentList[commentIndex]['nicoruId']
                 // TODO デバッグ用
-                // commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
+                commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
                 // ニコる数を表示している要素を探す
                 const nicoruCountElement = commentElement.getElementsByTagName('p')[0]
                 const commentBodyElement = commentElement.getElementsByTagName('p')[1]
