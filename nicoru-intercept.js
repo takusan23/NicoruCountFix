@@ -90,8 +90,9 @@
             intervalId = setInterval(() => {
                 // ニコるボタンを探して、4 つ上の要素まで戻ると、コメント一覧の要素
                 const commentListElementOrNull = Array.from(document.getElementsByTagName('button'))
-                    .filter(button => button.getAttribute('aria-label') === COMMENT_LIST_ITEM_ARIA_LABEL)[0]
-                    .parentElement
+                    .filter(button => button.getAttribute('aria-label') === COMMENT_LIST_ITEM_ARIA_LABEL)
+                    ?.[0]
+                    ?.parentElement
                     ?.parentElement
                     ?.parentElement
                     ?.parentElement
