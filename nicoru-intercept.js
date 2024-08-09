@@ -14,7 +14,7 @@
     /** MutationObserver 破棄用 @type {MutationObserver?} */
     let currentMutationObserver = null
 
-    // fetch API を上書きして、レスポンスを傍聴出来るようにする。かなりグレーゾーン
+    // fetch API を上書きして、レスポンスを検知、取得出来るようにする。傍聴してるようなもの。かなりグレーゾーン
     // ニコる数が HTML 内に埋め込まれなくなったため、コメント API のレスポンスを取得する
     // https://stackoverflow.com/questions/45425169/
     const { fetch: origFetch } = window;
@@ -27,7 +27,7 @@
                 .clone()
                 .json()
                 .then(data => {
-                    // コメントが取得（傍聴）できたら、コメント一覧のニコる数を正しい数に修正する処理を呼び出す
+                    // コメントが取得できたら、コメント一覧のニコる数を正しい数に修正する処理を呼び出す
                     startFixNicoruCount(data);
                 })
                 .catch(err => console.error(err));
@@ -71,7 +71,7 @@
                 // ニコっていれば nicoruId が存在する
                 const isNicotta = !!commentList[commentIndex]['nicoruId']
                 // TODO デバッグ用
-                commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
+                // commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
                 // ニコる数を表示している要素を探す
                 const nicoruCountElement = commentElement.getElementsByTagName('p')[0]
                 const commentBodyElement = commentElement.getElementsByTagName('p')[1]
