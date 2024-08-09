@@ -61,13 +61,27 @@
             commentItemElementList.forEach(commentElement => {
                 // コメント一覧の各コメント要素には data-index 属性が付いている。これが多分レスポンス JSON のコメント一覧に一致する
                 const commentIndex = Number(commentElement.getAttribute('data-index'))
-                const actualNicoruCount = commentList[commentIndex]['nicoruCount']
+                let actualNicoruCount = commentList[commentIndex]['nicoruCount']
                 const commentBody = commentList[commentIndex]['body']
+                // ニコっていれば nicoruId が存在する
+                const isNicotta = !!commentList[commentIndex]['nicoruId']
                 // TODO デバッグ用
                 // commentElement.setAttribute('comment-object', JSON.stringify(commentList[commentIndex]))
                 // ニコる数を表示している要素を探す
                 const nicoruCountElement = commentElement.getElementsByTagName('p')[0]
                 const commentBodyElement = commentElement.getElementsByTagName('p')[1]
+                const nicoruSvgElement = commentElement.getElementsByTagName('svg')[0]
+                // ページが読み込まれた後にニコるボタンを押した、解除したとき
+                // レスポンス JSON と SVG の CSS の rotate が一致しない場合は、読み込み後にニコるの操作をした判定をする
+                const isLatestNicotta = nicoruSvgElement.classList.contains('transform_rotate(-90deg)')
+                if (isLatestNicotta !== isNicotta) {
+                    // ニコる数の修正をする。レスポンス JSON より +1 / -1 する
+                    if (isLatestNicotta) {
+                        actualNicoruCount += 1
+                    } else {
+                        actualNicoruCount -= 1
+                    }
+                }
                 // ただ、合ってなかったら怖いので、一応コメントも一致しているか確認してから
                 if (commentBodyElement.textContent === commentBody) {
                     nicoruCountElement.textContent = actualNicoruCount
