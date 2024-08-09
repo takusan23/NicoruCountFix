@@ -6,7 +6,9 @@
     const COMMENT_RESPONSE_OWNER_COMMENT = 'owner'
     const COMMENT_LIST_FIND_INTERVAL_MS = 500
     const COMMENT_LIST_ITEM_ARIA_LABEL = 'ニコるボタン'
-    const LOCAL_STORAGE_KEY_NG_SETTING = 'nvpc:watch'
+    // NG 設定とかを localStorage で読み出す
+    const LOCAL_STORAGE_KEY_NG_SHARE_SETTING = 'nvpc:watch'
+    const LOCAL_STORAGE_KEY_NG_USER_COMMENT = '@nvweb-packages/comments:userng:v2'
 
     /** MutationObserver 破棄用 @type {MutationObserver?} */
     let currentMutationObserver = null
@@ -38,15 +40,18 @@
      * @param {*} commentObject コメント API のレスポンス JSON
      */
     async function startFixNicoruCount(commentObject) {
+        const ngShare = getShareNg()
+        const ngUserList = getUserNgList()
+        const ngWordList = getCommentNgList()
         // コメント一覧の仕様。普通のコメント、かんたんコメントは全て同じ一覧になる
         // https://blog.nicovideo.jp/niconews/225274.html
-        // ので、レスポンスからそれらを取り出して結合し、時間の早い順で並び替えする
-        // ただし投稿者コメントは出ない？
         const commentList = commentObject['data']['threads']
-            .filter(thread => thread['fork'] !== COMMENT_RESPONSE_OWNER_COMMENT)
-            .flatMap(thread => thread['comments'])
-            .filter(thread => checkNgComment(Number(thread['score']), ngSetting)) // 共有 NG を考慮
-            .sort((a, b) => a['vposMs'] - b['vposMs'])
+            .filter(thread => thread['fork'] !== COMMENT_RESPONSE_OWNER_COMMENT) // 投稿者コメントは出ない？
+            .flatMap(thread => thread['comments']) // コメントのオブジェクトにする
+            .filter(comment => checkNgComment(Number(comment['score']), ngShare)) // 共有 NG を考慮
+            .filter(comment => !ngUserList.includes(comment['userId'])) // NG ユーザーを考慮
+            .filter(comment => !ngWordList.includes(comment['body'])) // NG コメントを考慮
+            .sort((a, b) => a['vposMs'] - b['vposMs']) // 時間の早い順に
 
         /**
          * コメント一覧の各コメントを正しいニコる数に修正する
@@ -134,15 +139,33 @@
     }
 
     /**
-     * プレイヤーの NG 設定を読み出す
+     * プレイヤーの共有 NG 設定を読み出す
      * @returns {'none'|'low'|'middle'|'high'} のどれか、設定画面の NG 設定の順番通り
      */
-    function getNgSetting() {
-        const jsonString = localStorage.getItem(LOCAL_STORAGE_KEY_NG_SETTING)
-        if (!jsonString) {
-            return 'none'
+    function getShareNg() {
+        return getLocalStorageJson(LOCAL_STORAGE_KEY_NG_SHARE_SETTING)?.['data']?.['ngScoreThreshold']?.['data'] ?? 'none'
+    }
+
+    function getCommentNgList() {
+        return Object.keys(getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['word'])
+    }
+
+    function getUserNgList() {
+        return Object.keys(getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['id'])
+    }
+
+    /**
+     * localStorage にある JSON でシリアライズされた値を取得する
+     * @param {*} localStorageKey localStorage のキー
+     * @returns JSON オブジェクト
+     */
+    function getLocalStorageJson(localStorageKey) {
+        const jsonString = localStorage.getItem(localStorageKey)
+        if (jsonString) {
+            return JSON.parse(jsonString)
+        } else {
+            return {}
         }
-        return JSON.parse(jsonString)?.['data']?.['ngScoreThreshold']?.['data'] ?? 'none'
     }
 
 })()
