@@ -90,19 +90,37 @@
         }
 
         // コメント一覧部分の要素を取得する
-        // また、既に表示されている分のニコる数の修正をする
         const commentListElement = await awaitAddCommentListElement()
-        fixNicoruCountElementList(Array.from(commentListElement.children))
+
+        /** 今表示している分のコメント一覧のニコる数の修正をする */
+        function fixNicoruCountVisibleList() {
+            fixNicoruCountElementList(Array.from(commentListElement.children))
+        }
+
+        // 既に表示されている分のニコる数の修正をする
+        fixNicoruCountVisibleList()
 
         // コメントリストを MutationObserver で監視する。前回のがあれば破棄してから
         // これも setInterval はやっぱり良くないと思って
         currentMutationObserver?.disconnect()
         currentMutationObserver = new MutationObserver((mutations) => {
             mutations.forEach(mutationRecord => {
-                fixNicoruCountElementList(mutationRecord.addedNodes)
+                switch (mutationRecord.type) {
+                    case "attributes":
+                        // 読み込み後にニコった、ニコる解除の更新（transform_rotate(-90deg) の変更）を追跡する
+                        fixNicoruCountVisibleList()
+                        break
+                    case "characterData":
+                        // do nothing
+                        break
+                    case "childList":
+                        // コメント一覧の更新を追跡して更新
+                        fixNicoruCountElementList(mutationRecord.addedNodes)
+                        break
+                }
             })
         })
-        currentMutationObserver.observe(commentListElement, { childList: true })
+        currentMutationObserver.observe(commentListElement, { childList: true, attributes: true, subtree: true })
     }
 
     /**
