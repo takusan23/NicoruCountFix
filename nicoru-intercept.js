@@ -2,6 +2,7 @@
 // グローバルスコープを汚染しないよう即時実行関数式に閉じ込める
 (() => {
 
+    // コメント API のレスポンス以外は興味ないので
     const COMMENT_API = 'https://public.nvcomment.nicovideo.jp/v1/threads'
     const COMMENT_RESPONSE_OWNER_COMMENT = 'owner'
     const COMMENT_LIST_FIND_INTERVAL_MS = 500
@@ -48,7 +49,7 @@
         const commentList = commentObject['data']['threads']
             .filter(thread => thread['fork'] !== COMMENT_RESPONSE_OWNER_COMMENT) // 投稿者コメントは出ない？
             .flatMap(thread => thread['comments']) // コメントのオブジェクトにする
-            .filter(comment => checkNgComment(Number(comment['score']), ngShare)) // 共有 NG を考慮
+            .filter(comment => checkNgShareComment(Number(comment['score']), ngShare)) // 共有 NG を考慮
             .filter(comment => !ngUserList.includes(comment['userId'])) // NG ユーザーを考慮
             .filter(comment => !ngWordList.includes(comment['body'])) // NG コメントを考慮
             .sort((a, b) => a['vposMs'] - b['vposMs']) // 時間の早い順に
@@ -100,8 +101,7 @@
         // 既に表示されている分のニコる数の修正をする
         fixNicoruCountVisibleList()
 
-        // コメントリストを MutationObserver で監視する。前回のがあれば破棄してから
-        // これも setInterval はやっぱり良くないと思って
+        // コメントリスト / ニコる（ニコる解除） を MutationObserver で監視する。前回のがあれば破棄してから
         currentMutationObserver?.disconnect()
         currentMutationObserver = new MutationObserver((mutations) => {
             mutations.forEach(mutationRecord => {
@@ -157,7 +157,7 @@
      * @param ngSetting {'none'|'low'|'middle'|'high'}
      * @returns 表示可能な場合は true
      */
-    function checkNgComment(score, ngSetting) {
+    function checkNgShareComment(score, ngSetting) {
         switch (ngSetting) {
             case "none":
                 return true
@@ -178,10 +178,18 @@
         return getLocalStorageJson(LOCAL_STORAGE_KEY_NG_SHARE_SETTING)?.['data']?.['ngScoreThreshold']?.['data'] ?? 'none'
     }
 
+    /**
+     * コメント NG を取得する
+     * @returns コメント NG 一覧
+     */
     function getCommentNgList() {
         return Object.keys(getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['word'])
     }
 
+    /**
+     * コメントユーザー NG を取得する
+     * @returns ユーザー NG の ID 一覧
+     */
     function getUserNgList() {
         return Object.keys(getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['id'])
     }
