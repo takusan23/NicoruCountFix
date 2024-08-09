@@ -62,6 +62,10 @@
             commentItemElementList.forEach(commentElement => {
                 // コメント一覧の各コメント要素には data-index 属性が付いている。これが多分レスポンス JSON のコメント一覧に一致する
                 const commentIndex = Number(commentElement.getAttribute('data-index'))
+                // fixNicoruCountVisibleList() 関数、動画を切り替えると前回の動画の状態で呼ばれることがある？無ければ return。
+                // どうせ MutationObserver で捕捉できるので
+                if (!commentList[commentIndex]) return
+
                 let actualNicoruCount = commentList[commentIndex]['nicoruCount']
                 const commentBody = commentList[commentIndex]['body']
                 // ニコっていれば nicoruId が存在する
