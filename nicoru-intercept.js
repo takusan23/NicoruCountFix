@@ -209,7 +209,8 @@
      * @returns コメント NG 一覧
      */
     function getCommentNgList() {
-        return Object.keys(getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['word'])
+        const wordObjectOrEmpty = getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['word'] ?? {}
+        return Object.keys(wordObjectOrEmpty)
     }
 
     /**
@@ -217,7 +218,8 @@
      * @returns ユーザー NG の ID 一覧
      */
     function getUserNgList() {
-        return Object.keys(getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['id'])
+        const idObjectOrEmpty = getLocalStorageJson(LOCAL_STORAGE_KEY_NG_USER_COMMENT)?.['data']?.['lastMatchedTimeMap']?.['data']?.['id'] ?? {}
+        return Object.keys(idObjectOrEmpty)
     }
 
     /**
